@@ -1,0 +1,22 @@
+{
+  "main": "gui/index.html",
+  "logo": "logo.png",
+  "preload": "preload.js",
+  "features": [
+    {
+      "code": "LAN-Share",
+      "explain": "局域网文件分享.",
+      "cmds": [
+        "局域网文件共享",
+        "lan",
+        "LAN",
+        "share",
+        "文件",
+        "共享",
+        "文件共享",
+        "局域网",
+        "内网"
+      ]
+    }
+  ]
+}

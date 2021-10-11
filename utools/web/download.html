@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>文件列表</title>
+</head>
+
+<body class="body">
+    <ul id="list">
+    </ul>
+</body>
+<script>
+    function sendGet(url, callback) {
+        const xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                callback(JSON.parse(xhr.responseText))
+            }
+        };
+        //发送异步请求
+        xhr.open("GET", url, true);
+        //发送请求
+        xhr.send();
+    }
+
+    window.onload = function () {
+        sendGet("/files", (data) => {
+            console.log(data)
+            const ul = document.getElementById('list')
+            if (ul && data && data.data) {
+                for (const file of data.data) {
+                    const node = document.createElement("li");
+                    const a = document.createElement('a')
+                    a.innerText = `${file.name} (${(file.size / 1000000).toFixed(2)}兆)`;
+                    a.href = file.url;
+                    node.appendChild(a)
+                    ul.appendChild(node)
+                }
+            }
+        })
+    }
+</script>
+
+</html>
