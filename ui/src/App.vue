@@ -100,7 +100,7 @@ export default {
 				name,
 				size,
 				path,
-				url: `http://${host.value}:9527/download/${name}`,
+				url: `http://${host.value}:9527/download/${encodeURIComponent(name)}`,
 			};
 			console.log('选择文件', obj);
 			await addFile(obj);
