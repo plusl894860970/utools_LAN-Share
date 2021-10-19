@@ -4,38 +4,42 @@
 			action="#"
 			:http-request="fileSeclected"
 			:show-file-list="false"
+			multiple
+			drag
+			style="width: 100%"
+			@click="clickUpload"
 		>
-			<el-button type="primary" style="marigin: 15px" round
-				>分享文件</el-button
-			>
+			<div class="header" style="padding: 15px">
+				<el-button id="upload" type="primary" round>分享文件</el-button>
+			</div>
+			<el-table :data="tableData" style="width: 100%" height="400">
+				<!-- <el-table-column prop="name" label="文件名" /> -->
+				<el-table-column prop="path" label="文件路径" />
+				<el-table-column prop="url" label="下载链接" />
+				<el-table-column label="文件大小" width="100">
+					<template #default="scope">
+						{{ (scope.row.size / 1000000).toFixed(2) }}Mb
+					</template>
+				</el-table-column>
+				<el-table-column label="操作" width="200">
+					<template #default="scope">
+						<el-button
+							size="mini"
+							plain
+							@click.prevent="copyLink(scope.row.url)"
+							>复制链接</el-button
+						>
+						<el-button
+							type="danger"
+							size="mini"
+							plain
+							@click.prevent="cancelShare(scope.row)"
+							>取消共享</el-button
+						>
+					</template>
+				</el-table-column>
+			</el-table>
 		</el-upload>
-		<el-table :data="tableData" style="width: 100%" height="400">
-			<!-- <el-table-column prop="name" label="文件名" /> -->
-			<el-table-column prop="path" label="文件路径" />
-			<el-table-column prop="url" label="下载链接" />
-			<el-table-column label="文件大小" width="100">
-				<template #default="scope">
-					{{ (scope.row.size / 1000000).toFixed(2) }}Mb
-				</template>
-			</el-table-column>
-			<el-table-column label="操作" width="200">
-				<template #default="scope">
-          <el-button
-            size="mini"
-            plain
-						@click="copyLink(scope.row.url)"
-						>复制链接</el-button
-					>
-					<el-button
-						type="danger"
-            size="mini"
-            plain
-						@click="cancelShare(scope.row)"
-						>取消共享</el-button
-					>
-				</template>
-			</el-table-column>
-		</el-table>
 	</div>
 </template>
 <script lang="ts">
@@ -61,7 +65,7 @@ declare global {
 		utools?: {
 			onPluginReady: any;
 			setExpendHeight: any;
-      copyText: any;
+			copyText: any;
 		};
 	}
 }
@@ -102,11 +106,32 @@ export default {
 			await addFile(obj);
 		};
 		const ready = ref(false);
-    // 复制
-    const copyLink = (link: string) => {
-      window.utools.copyText(link)
-      ElMessage.success('复制成功')
-    }
+		// 复制
+		const copyLink = (link: string) => {
+			window.utools.copyText(link);
+			ElMessage.success('复制成功');
+		};
+		// 点击表格
+		let clickedButton = false;
+		const clickUpload = (e: any) => {
+			const tagsName = e.path.map((el: any) => {
+				if (el.id === 'upload') {
+					clickedButton = true;
+					const inputs =
+						document.getElementsByClassName('el-upload__input');
+					const upload: HTMLElement = inputs[0] as HTMLElement;
+					if (upload) upload.click();
+				}
+				return el && el.tagName;
+			});
+			if (tagsName.includes('INPUT')) {
+				if (clickedButton) clickedButton = false;
+				else e.preventDefault();
+			} else {
+				clickedButton = false;
+				e.preventDefault();
+			}
+		};
 		onMounted(async () => {
 			window.utools.onPluginReady(() => {
 				ready.value = true;
@@ -120,14 +145,29 @@ export default {
 				host.value = await window.api.getIPAddress();
 			await getFiles();
 		});
-		return { tableData, cancelShare, fileSeclected, copyLink };
+		return { tableData, cancelShare, fileSeclected, copyLink, clickUpload };
 	},
 };
 </script>
 
-<style scoped>
+<style>
 * {
 	padding: 0;
 	margin: 0;
+}
+#app {
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
+}
+.el-upload {
+	width: 100vw !important;
+}
+.el-upload-dragger {
+	width: 100% !important;
+	height: 100vh !important;
+	text-align: left !important;
+	border: none !important;
+	cursor: default !important;
 }
 </style>
