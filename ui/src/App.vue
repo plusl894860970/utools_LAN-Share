@@ -1,6 +1,7 @@
 <template>
 	<div id="app">
 		<el-upload
+			v-if="port"
 			action="#"
 			:http-request="fileSeclected"
 			:show-file-list="false"
@@ -11,14 +12,56 @@
 		>
 			<div class="header" style="padding: 15px">
 				<el-button id="upload" type="primary" round>分享文件</el-button>
+				<div>
+					<el-form label-width="80px">
+						<el-form-item label="网卡">
+							<el-select
+								v-model="usingHost"
+								placeholder="请选择网卡"
+								@click="checkHosts"
+							>
+								<el-option
+									v-for="item in hosts"
+									:key="item"
+									:label="item"
+									:value="item"
+								>
+								</el-option>
+							</el-select>
+						</el-form-item>
+					</el-form>
+				</div>
 			</div>
-			<el-table :data="tableData" style="width: 100%" height="400">
+			<el-table
+				:data="tableData"
+				style="width: 100%"
+				:height="tableHeight"
+			>
 				<!-- <el-table-column prop="name" label="文件名" /> -->
-				<el-table-column prop="path" label="文件路径" />
-				<el-table-column prop="url" label="下载链接" />
+				<el-table-column prop="path" label="文件路径">
+					<template #default="scope">
+						<el-link @click="openDir(scope.row.path)">{{
+							scope.row.path
+						}}</el-link>
+					</template>
+				</el-table-column>
+				<el-table-column prop="url" label="下载链接">
+					<template #default="scope">
+						<el-input
+							type="textarea"
+							:autosize="{ minRows: 2, maxRows: 4 }"
+							placeholder="请输入内容"
+							:value="`http://${usingHost}:${port}${scope.row.url}`"
+							readonly
+						>
+						</el-input>
+					</template>
+				</el-table-column>
 				<el-table-column label="文件大小" width="100">
 					<template #default="scope">
-						{{ (scope.row.size / 1000000).toFixed(2) }}Mb
+						<el-tag>
+							{{ showSize(scope.row.size) }}
+						</el-tag>
 					</template>
 				</el-table-column>
 				<el-table-column label="操作" width="200">
@@ -40,11 +83,12 @@
 				</el-table-column>
 			</el-table>
 		</el-upload>
+		<el-skeleton style="padding: 15px" v-else />
 	</div>
 </template>
 <script lang="ts">
 import { ElMessage } from 'element-plus';
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref, Ref } from 'vue';
 interface File {
 	name: string;
 	url: string;
@@ -60,12 +104,14 @@ declare global {
 			remove: any;
 			clear: any;
 			values: any;
-			getIPAddress: any;
+			getIPAddresses: any;
+			getPort: any;
 		};
 		utools?: {
 			onPluginReady: any;
 			setExpendHeight: any;
 			copyText: any;
+			shellShowItemInFolder: any;
 		};
 	}
 }
@@ -81,7 +127,7 @@ export default {
 		};
 		const addFile = async (file: File) => {
 			if (!window.api?.add) return;
-			tableData.push(file);
+			tableData.unshift(file);
 			await window.api.add(file);
 		};
 		const cancelShare = async (row: File) => {
@@ -91,7 +137,9 @@ export default {
 			tableData.length = 0;
 			tableData.push(...newTableData);
 		};
-		const host = ref('');
+		const ips: Array<string> = [];
+		const hosts = reactive(ips);
+		const usingHost: Ref<string> = ref('');
 		// 选择文件
 		const fileSeclected = async (e: any) => {
 			const { file } = e;
@@ -100,15 +148,16 @@ export default {
 				name,
 				size,
 				path,
-				url: `http://${host.value}:9527/download/${encodeURIComponent(name)}`,
+				url: `/download/${encodeURIComponent(name)}`,
 			};
-			console.log('选择文件', obj);
 			await addFile(obj);
 		};
 		const ready = ref(false);
 		// 复制
 		const copyLink = (link: string) => {
-			window.utools.copyText(link);
+			window.utools.copyText(
+				`http://${usingHost.value}:${port.value}${link}`
+			);
 			ElMessage.success('复制成功');
 		};
 		// 点击表格
@@ -132,6 +181,61 @@ export default {
 				e.preventDefault();
 			}
 		};
+		// 获取网卡信息
+		const GetIpAddresses = async () => {
+			if (window.api?.getIPAddresses) {
+				const ipAddresses: Array<string> =
+					(await window.api.getIPAddresses()) || [];
+				if (!ipAddresses.length) ElMessage.error('获取网卡出错');
+				hosts.length = 0;
+				hosts.push(...ipAddresses);
+				const normalHosts = hosts.filter((o: string) =>
+					o.startsWith('192.168')
+				);
+				if (normalHosts.length) usingHost.value = normalHosts[0];
+				else usingHost.value = hosts[0];
+			} else {
+				ElMessage.error('程序加载出错');
+			}
+		};
+		const checkHosts = async () => {
+			if (!hosts.length) await GetIpAddresses();
+		};
+		// 显示大小
+		const showSize = (size: number) => {
+			const GbEdge = 1024 * 1000000;
+			const MbEdge = 1024 * 1000;
+			const KbEdge = 1024;
+			if (size > GbEdge) {
+				// GB
+				return `${(size / GbEdge).toFixed(2)}GB`;
+			} else if (size > MbEdge) {
+				// Mb
+				return `${(size / MbEdge).toFixed(2)}MB`;
+			} else if (size > KbEdge) {
+				// kb
+				return `${(size / KbEdge).toFixed(2)}KB`;
+			} else {
+				// B
+				return `${size.toFixed(2)}B`;
+			}
+		};
+		// 显示文件夹
+		const openDir = (path: string) => {
+			window.utools.shellShowItemInFolder(path);
+		};
+		// tableHeight
+		const tableHeight = ref(400);
+		const setTableHeight = () => {
+			tableHeight.value = document.body.clientHeight - 70;
+		};
+		// port
+		const port = ref(0);
+		const GetPort = async () => {
+			if (window.api?.getPort) {
+				port.value = await window.api.getPort();
+			}
+		};
 		onMounted(async () => {
 			window.utools.onPluginReady(() => {
 				ready.value = true;
@@ -139,13 +243,34 @@ export default {
 			while (!ready.value) {
 				await new Promise((resolve) => setTimeout(resolve, 1000));
 			}
-			if (window.api?.startServer) await window.api.startServer();
-			window.utools.setExpendHeight(460);
-			if (window.api?.getIPAddress)
-				host.value = await window.api.getIPAddress();
+			if (window.api?.startServer) {
+				try {
+					await window.api.startServer();
+				} catch (e) {
+					ElMessage.error('服务不可用 ' + e);
+				}
+			}
+			await GetIpAddresses();
+			await GetPort();
 			await getFiles();
+			// 设置table高度
+			setTableHeight();
+			window.onresize = setTableHeight;
 		});
-		return { tableData, cancelShare, fileSeclected, copyLink, clickUpload };
+		return {
+			tableData,
+			cancelShare,
+			fileSeclected,
+			copyLink,
+			clickUpload,
+			usingHost,
+			hosts,
+			checkHosts,
+			showSize,
+			openDir,
+			tableHeight,
+			port,
+		};
 	},
 };
 </script>
@@ -158,6 +283,13 @@ export default {
 #app {
 	width: 100vw;
 	height: 100vh;
+	overflow: hidden;
+}
+.header {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	height: 40px;
 	overflow: hidden;
 }
 .el-upload {

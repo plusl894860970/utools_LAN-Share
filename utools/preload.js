@@ -5,8 +5,22 @@ const path = require('path');
 const fs = require('fs');
 
 let server;
+let port = 9527;
 
-console.log('proload.js loaded', utools)
+// listen
+let success = false
+const app_serve = (app, _port) => {
+  return new Promise((resolve, reject) => {
+    app.listen(_port, '0.0.0.0', () => {
+      console.log('启动成功', _port)
+      success = true
+      resolve(1)
+    });
+    setTimeout(() => {
+      if (!success) reject('启动出错', _port)
+    }, 2000)
+  })
+}
 
 // 启动
 const startServer = async () => {
@@ -14,7 +28,6 @@ const startServer = async () => {
   const app = new Koa();
   const router = new Router();
   // 默认重定向到index
-
   router.get('/', async ctx => ctx.redirect('/download.html'));
   router.get('/download/:fileName', async ctx => {
     const { fileName } = ctx.params;
@@ -43,7 +56,12 @@ const startServer = async () => {
   // 启动监听
   app.use(serve(path.join(__dirname, './web/')));
   app.use(router.routes());
-  server = app.listen(9527);
+  try {
+    server = await app_serve(app, port)
+  } catch (error) {
+    port++;
+    server = await app_serve(app, port)
+  }
 }
 // 关闭服务
 const stopServer = () => {
@@ -57,7 +75,7 @@ const add = async (file) => {
   // 更新列表
   const list = getList()
   const exist = list.find(o => o === file.name)
-  if (!exist) list.push(file.name)
+  if (!exist) list.unshift(file.name)
   setList(list)
   return { success: true, data: filePath };
 }
@@ -102,14 +120,15 @@ const getList = () => {
     utools.dbStorage.removeItem('files')
     console.error(error);
   }
-  console.log('list', list)
   return list || [];
 }
 // set list
 const setList = (list) => {
   utools.dbStorage.setItem('files', JSON.stringify(list))
 }
-const { getIPAddress } = require('./util');
+const { getIPAddresses } = require('./util');
+
+const getPort = async () => (port)
 
 window.api = {
   startServer,
@@ -118,5 +137,6 @@ window.api = {
   remove,
   clear,
   values,
-  getIPAddress,
+  getIPAddresses,
+  getPort
 }
