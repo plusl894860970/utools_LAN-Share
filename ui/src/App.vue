@@ -246,7 +246,7 @@ export default {
         port.value = await window.api.getPort();
       }
     };
-    const addFiles = (payload) => {
+    const addFiles = (payload: Array<any>) => {
       if (!started.value) {
         setTimeout(() => {
           addFiles(payload);
@@ -267,7 +267,7 @@ export default {
         }
       }
     };
-    const tableRowClassName = (scope) => {
+    const tableRowClassName = (scope: any) => {
       const row: File = scope.row;
       if (row.recently) return "recently";
       return "";
@@ -275,7 +275,7 @@ export default {
     const started = ref(false);
     onMounted(async () => {
       // 读取进入参数
-      window.utools.onPluginEnter(({ type, payload }) => {
+      window.utools.onPluginEnter(({ type, payload }: any) => {
         if (type === "files") addFiles(payload);
       });
       window.utools.onPluginReady(() => {
