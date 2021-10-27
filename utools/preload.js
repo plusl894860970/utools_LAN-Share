@@ -69,6 +69,12 @@ const stopServer = () => {
 }
 // add file
 const add = async (file) => {
+  delete file.recently;
+  // 文件大小
+  if (!file.size) {
+    const stat = fs.statSync(file.path)
+    file.size = stat.size;
+  }
   const fileExist = fs.existsSync(file.path)
   if (!fileExist) return { success: false, message: '文件路径错误或无权限访问' };
   utools.dbStorage.setItem(file.name, JSON.stringify(file))
@@ -77,7 +83,7 @@ const add = async (file) => {
   const exist = list.find(o => o === file.name)
   if (!exist) list.unshift(file.name)
   setList(list)
-  return { success: true, data: filePath };
+  return { success: true, data: file.path };
 }
 // remove file
 const remove = async (file) => {

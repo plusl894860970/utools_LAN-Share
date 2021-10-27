@@ -2,6 +2,9 @@
   "main": "gui/index.html",
   "logo": "logo.png",
   "preload": "preload.js",
+  "development": {
+    "main": "http://127.0.0.1:3000"
+  },
   "features": [
     {
       "code": "LAN-Share",
@@ -15,7 +18,13 @@
         "共享",
         "文件共享",
         "局域网",
-        "内网"
+        "内网",
+        {
+          "type": "files",
+          "label": "添加到局域网共享",
+          "fileType": "file",
+          "minLength": 1
+        }
       ]
     }
   ]
