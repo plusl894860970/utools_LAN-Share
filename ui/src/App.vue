@@ -141,7 +141,7 @@ export default {
       setTimeout(() => {
         setTableHeight();
       }, 500);
-      await window.api.add(JSON.parse(JSON.stringify(file)));
+      await window.api.add(file);
     };
     const cancelShare = async (row: File) => {
       if (!window.api?.remove) return;
@@ -213,6 +213,7 @@ export default {
     };
     // 显示大小
     const showSize = (size: number) => {
+      if (!size) return '未知';
       const GbEdge = 1024 * 1000000;
       const MbEdge = 1024 * 1000;
       const KbEdge = 1024;

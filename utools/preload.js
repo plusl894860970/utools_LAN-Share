@@ -69,7 +69,6 @@ const stopServer = () => {
 }
 // add file
 const add = async (file) => {
-  delete file.recently;
   // 文件大小
   if (!file.size) {
     const stat = fs.statSync(file.path)
@@ -77,7 +76,9 @@ const add = async (file) => {
   }
   const fileExist = fs.existsSync(file.path)
   if (!fileExist) return { success: false, message: '文件路径错误或无权限访问' };
-  utools.dbStorage.setItem(file.name, JSON.stringify(file))
+  const target = JSON.parse(JSON.stringify(file))
+  delete target.recently;
+  utools.dbStorage.setItem(file.name, JSON.stringify(target))
   // 更新列表
   const list = getList()
   const exist = list.find(o => o === file.name)
