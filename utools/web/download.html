@@ -25,6 +25,26 @@
         xhr.send();
     }
 
+    function sizeShow(size) {
+        if (!size) return '未知';
+        const GbEdge = 1024 * 1000000;
+        const MbEdge = 1024 * 1000;
+        const KbEdge = 1024;
+        if (size > GbEdge) {
+            // GB
+            return `${(size / GbEdge).toFixed(2)}GB`;
+        } else if (size > MbEdge) {
+            // Mb
+            return `${(size / MbEdge).toFixed(2)}MB`;
+        } else if (size > KbEdge) {
+            // kb
+            return `${(size / KbEdge).toFixed(2)}KB`;
+        } else {
+            // B
+            return `${size.toFixed(2)}B`;
+        }
+    }
+
     window.onload = function () {
         sendGet("/files", (data) => {
             console.log(data)
@@ -33,9 +53,10 @@
                 for (const file of data.data) {
                     const node = document.createElement("li");
                     const a = document.createElement('a')
-                    a.innerText = `${file.name} (${(file.size / 1000000).toFixed(2)}兆)`;
+                    a.innerText = `${file.name} (${sizeShow(file.size)})`;
                     a.href = file.url;
                     node.appendChild(a)
+                    node.style.marginTop = '15px'
                     ul.appendChild(node)
                 }
             }
