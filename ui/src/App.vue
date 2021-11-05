@@ -12,31 +12,15 @@
 		>
 			<div class="header" style="padding: 15px">
 				<div>
-					<el-button id="upload" type="primary" round
-						>分享文件</el-button
-					>
-					<el-button
-						type="success"
-						round
-						@click="generateQrcode(`http://${usingHost}:${port}`)"
-						>聚合分享</el-button
-					>
+					<el-button id="upload" type="primary" round>分享文件</el-button>
+					<el-button type="success" round @click="generateQrcode(`http://${usingHost}:${port}`)">聚合分享</el-button>
+					<el-button icon="el-icon-setting" circle @click="showSettings"></el-button>
 				</div>
 				<div>
 					<el-form label-width="80px">
 						<el-form-item label="网卡">
-							<el-select
-								v-model="usingHost"
-								placeholder="请选择网卡"
-								@click="checkHosts"
-							>
-								<el-option
-									v-for="item in hosts"
-									:key="item"
-									:label="item"
-									:value="item"
-								>
-								</el-option>
+							<el-select v-model="usingHost" placeholder="请选择网卡" @click="checkHosts">
+								<el-option v-for="item in hosts" :key="item" :label="item" :value="item"></el-option>
 							</el-select>
 						</el-form-item>
 					</el-form>
@@ -51,9 +35,11 @@
 				<!-- <el-table-column prop="name" label="文件名" /> -->
 				<el-table-column prop="path" label="文件路径">
 					<template #default="scope">
-						<el-link @click="openDir(scope.row.path)">{{
-							scope.row.path
-						}}</el-link>
+						<el-link @click="openDir(scope.row.path)">
+							{{
+								scope.row.path
+							}}
+						</el-link>
 					</template>
 				</el-table-column>
 				<el-table-column prop="url" label="下载链接">
@@ -64,15 +50,12 @@
 							placeholder="请输入内容"
 							:value="`http://${usingHost}:${port}${scope.row.url}`"
 							readonly
-						>
-						</el-input>
+						></el-input>
 					</template>
 				</el-table-column>
 				<el-table-column label="文件大小" width="100">
 					<template #default="scope">
-						<el-tag>
-							{{ showSize(scope.row.size) }}
-						</el-tag>
+						<el-tag>{{ showSize(scope.row.size) }}</el-tag>
 					</template>
 				</el-table-column>
 				<el-table-column label="操作" width="250">
@@ -100,22 +83,11 @@
 										d="M320 64l-256 0 0 256 256 0 0-256zM384 0l0 0 0 384-384 0 0-384 384 0zM128 128l128 0 0 128-128 0zM960 64l-256 0 0 256 256 0 0-256zM1024 0l0 0 0 384-384 0 0-384 384 0zM768 128l128 0 0 128-128 0zM320 704l-256 0 0 256 256 0 0-256zM384 640l0 0 0 384-384 0 0-384 384 0zM128 768l128 0 0 128-128 0zM448 0l64 0 0 64-64 0zM512 64l64 0 0 64-64 0zM448 128l64 0 0 64-64 0zM512 192l64 0 0 64-64 0zM448 256l64 0 0 64-64 0zM512 320l64 0 0 64-64 0zM448 384l64 0 0 64-64 0zM448 512l64 0 0 64-64 0zM512 576l64 0 0 64-64 0zM448 640l64 0 0 64-64 0zM512 704l64 0 0 64-64 0zM448 768l64 0 0 64-64 0zM512 832l64 0 0 64-64 0zM448 896l64 0 0 64-64 0zM512 960l64 0 0 64-64 0zM960 512l64 0 0 64-64 0zM64 512l64 0 0 64-64 0zM128 448l64 0 0 64-64 0zM0 448l64 0 0 64-64 0zM256 448l64 0 0 64-64 0zM320 512l64 0 0 64-64 0zM384 448l64 0 0 64-64 0zM576 512l64 0 0 64-64 0zM640 448l64 0 0 64-64 0zM704 512l64 0 0 64-64 0zM768 448l64 0 0 64-64 0zM832 512l64 0 0 64-64 0zM896 448l64 0 0 64-64 0zM960 640l64 0 0 64-64 0zM576 640l64 0 0 64-64 0zM640 576l64 0 0 64-64 0zM704 640l64 0 0 64-64 0zM832 640l64 0 0 64-64 0zM896 576l64 0 0 64-64 0zM960 768l64 0 0 64-64 0zM576 768l64 0 0 64-64 0zM640 704l64 0 0 64-64 0zM768 704l64 0 0 64-64 0zM832 768l64 0 0 64-64 0zM896 704l64 0 0 64-64 0zM960 896l64 0 0 64-64 0zM640 832l64 0 0 64-64 0zM704 896l64 0 0 64-64 0zM768 832l64 0 0 64-64 0zM832 896l64 0 0 64-64 0zM640 960l64 0 0 64-64 0zM768 960l64 0 0 64-64 0zM896 960l64 0 0 64-64 0z"
 										p-id="3762"
 										fill="#409EFF"
-									></path>
+									/>
 								</svg>
 							</el-button>
-							<el-button
-								size="mini"
-								plain
-								@click.prevent="copyLink(scope.row.url)"
-								>复制链接</el-button
-							>
-							<el-button
-								type="danger"
-								size="mini"
-								plain
-								@click.prevent="cancelShare(scope.row)"
-								>取消共享</el-button
-							>
+							<el-button size="mini" plain @click.prevent="copyLink(scope.row.url)">复制链接</el-button>
+							<el-button type="danger" size="mini" plain @click.prevent="cancelShare(scope.row)">取消共享</el-button>
 						</div>
 					</template>
 				</el-table-column>
@@ -126,16 +98,21 @@
 					<qrcode-vue :value="sharingUrl" :size="300" level="H" />
 				</div>
 				<div class="share_url">
-					<el-input
-						type="textarea"
-						:autosize="{ minRows: 1, maxRows: 4 }"
-						:value="sharingUrl"
-						readonly
-					>
-					</el-input>
+					<el-input type="textarea" :autosize="{ minRows: 1, maxRows: 4 }" :value="sharingUrl" readonly></el-input>
 				</div>
-				<template #footer> </template>
+				<template #footer></template>
 			</el-dialog>
+			<!-- 抽屉 -->
+			<el-drawer title="设置" v-model="isShowSettings" direction="ltr" destroy-on-close>
+				<el-form :inline="true" class="demo-form-inline">
+					<el-form-item label="端口">
+						<el-input v-model="custom_port" placeholder="自定义端口"></el-input>
+					</el-form-item>
+					<el-form-item>
+						<el-button type="primary" @click="save">保存</el-button>
+					</el-form-item>
+				</el-form>
+			</el-drawer>
 		</el-upload>
 		<el-skeleton style="padding: 15px" v-else />
 	</div>
@@ -168,6 +145,7 @@ declare global {
 			values: any;
 			getIPAddresses: any;
 			getPort: any;
+			setPort: any;
 		};
 		utools?: {
 			onPluginReady: any;
@@ -307,6 +285,17 @@ export default {
 				port.value = await window.api.getPort();
 			}
 		};
+		// settings
+		const custom_port = ref(0)
+		const isShowSettings = ref(false)
+		const showSettings = () => {
+			custom_port.value = port.value;
+			isShowSettings.value = true;
+		}
+		const save = () => {
+			window.api?.setPort(custom_port.value)
+			ElMessage.success('设置成功, 插件重启后生效')
+		}
 		const addFiles = (payload: Array<any>) => {
 			if (!started.value) {
 				setTimeout(() => {
@@ -386,6 +375,11 @@ export default {
 			dialogVisible,
 			generateQrcode,
 			sharingUrl,
+			// 设置
+			custom_port,
+			isShowSettings,
+			showSettings,
+			save
 		};
 	},
 };

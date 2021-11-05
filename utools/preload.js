@@ -13,6 +13,7 @@ const app_serve = (app, _port) => {
   return new Promise((resolve, reject) => {
     app.listen(_port, '0.0.0.0', () => {
       console.log('启动成功', _port)
+      utools.showNotification('局域网共享服务已开启, 端口: ' + _port)
       success = true
       resolve(1)
     });
@@ -54,9 +55,12 @@ const startServer = async () => {
   router.get('/files', async ctx => {
     ctx.body = await values();
   })
-  // 启动监听
   app.use(serve(path.join(__dirname, './web/')));
   app.use(router.routes());
+  // 启动监听
+  const custom_port = utools.dbStorage.getItem('port')
+  console.log('自定义port', custom_port)
+  if (custom_port) port = parseInt(custom_port)
   try {
     server = await app_serve(app, port)
   } catch (error) {
@@ -136,6 +140,10 @@ const setList = (list) => {
 }
 const { getIPAddresses } = require('./util');
 
+
+const setPort = async (port) => {
+  utools.dbStorage.setItem('port', port)
+}
 const getPort = async () => (port)
 
 
@@ -218,5 +226,6 @@ window.api = {
   clear,
   values,
   getIPAddresses,
-  getPort
+  getPort,
+  setPort
 }
