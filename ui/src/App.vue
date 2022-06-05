@@ -13,7 +13,7 @@
 			<div class="header" style="padding: 15px">
 				<div>
 					<el-button id="upload" type="primary" round>分享文件</el-button>
-					<el-button type="success" round @click="generateQrcode(`http://${usingHost}:${port}`)">聚合分享</el-button>
+					<el-button type="success" round @click="generateQrcode(`${baseUrl}`)">聚合分享</el-button>
 					<el-button icon="el-icon-setting" circle @click="showSettings"></el-button>
 				</div>
 				<div>
@@ -48,7 +48,7 @@
 							type="textarea"
 							:autosize="{ minRows: 2, maxRows: 4 }"
 							placeholder="请输入内容"
-							:value="`http://${usingHost}:${port}${scope.row.url}`"
+							:value="`${baseUrl}${scope.row.url}`"
 							readonly
 						></el-input>
 					</template>
@@ -66,7 +66,7 @@
 								class="qrcode_btn"
 								@click="
 									generateQrcode(
-										`http://${usingHost}:${port}${scope.row.url}`
+										`${baseUrl}${scope.row.url}`
 									)
 								"
 							>
@@ -119,7 +119,7 @@
 </template>
 <script lang="ts">
 import { ElMessage } from 'element-plus';
-import { onMounted, reactive, ref, Ref } from 'vue';
+import { onMounted, reactive, ref, Ref, computed } from 'vue';
 import QrcodeVue from 'qrcode.vue';
 interface File {
 	name: string;
@@ -204,7 +204,7 @@ export default {
 		// 复制
 		const copyLink = (link: string) => {
 			window.utools.copyText(
-				`http://${usingHost.value}:${port.value}${link}`
+				`${baseUrl}${link}`
 			);
 			ElMessage.success('复制成功');
 		};
@@ -357,6 +357,8 @@ export default {
 			window.onresize = setTableHeight;
 			started.value = true;
 		});
+		// 生成访问链接
+		const baseUrl = computed(() => (`http://${usingHost.value.includes(':') ? `[${usingHost.value}]` : usingHost.value }:${port.value}`))
 		return {
 			tableData,
 			cancelShare,
@@ -379,7 +381,8 @@ export default {
 			custom_port,
 			isShowSettings,
 			showSettings,
-			save
+			save,
+			baseUrl,
 		};
 	},
 };

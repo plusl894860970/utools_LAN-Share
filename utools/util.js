@@ -11,6 +11,9 @@ function getIPAddresses() {
       if (alias.family === 'IPv4') {
         ipAddresses.push(alias.address)
       }
+      if (alias.family === 'IPv6' && alias.scopeid === 0 && !alias.internal) {
+        ipAddresses.push(alias.address)
+      }
     }
   }
   return ipAddresses;

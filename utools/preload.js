@@ -11,7 +11,7 @@ let port = 9527;
 let success = false
 const app_serve = (app, _port) => {
   return new Promise((resolve, reject) => {
-    app.listen(_port, '0.0.0.0', () => {
+    app.listen(_port, () => {
       console.log('启动成功', _port)
       utools.showNotification('局域网共享服务已开启, 端口: ' + _port)
       success = true
