@@ -6,6 +6,8 @@
 				<div>
 					<el-button id="upload" type="primary" round>分享文件</el-button>
 					<el-button type="success" round @click="generateQrcode(`${baseUrl}`)">聚合分享</el-button>
+					<el-button type="danger" round @click="batchRemove" :disabled="!multipleSelection.length">批量取消
+					</el-button>
 					<el-button icon="el-icon-setting" circle @click="showSettings"></el-button>
 				</div>
 				<div>
@@ -18,8 +20,9 @@
 					</el-form>
 				</div>
 			</div>
-			<el-table :data="tableData" style="width: 100%" :height="tableHeight" :row-class-name="tableRowClassName">
-				<!-- <el-table-column prop="name" label="文件名" /> -->
+			<el-table ref="multipleTableRef" :data="tableData" style="width: 100%" :height="tableHeight"
+				:row-class-name="tableRowClassName" @selection-change="handleSelectionChange">
+				<el-table-column type="selection" width="55" />
 				<el-table-column prop="path" label="文件路径">
 					<template #default="scope">
 						<el-link @click="openDir(scope.row.path)">
@@ -335,6 +338,21 @@ onMounted(async () => {
 });
 // 生成访问链接
 const baseUrl = computed(() => (`http://${usingHost.value.includes(':') ? `[${usingHost.value}]` : usingHost.value}:${port.value}`))
+
+// 多选
+const multipleTableRef = ref<InstanceType<any>>()
+const multipleSelection = ref<any[]>([])
+const handleSelectionChange = (val: any[]) => {
+	multipleSelection.value = val
+}
+// 批量删除
+const batchRemove = async () => {
+	for (const row of multipleSelection.value) {
+		cancelShare(row)
+	}
+	multipleSelection.value = []
+}
+
 </script>
 
 <style>
